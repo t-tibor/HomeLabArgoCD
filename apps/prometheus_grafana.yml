@@ -5,8 +5,6 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
   source:
@@ -25,7 +23,6 @@ spec:
       - ServerSideApply=true
       - RespectIgnoreDifferences=true
       - ApplyOutOfSyncOnly=true
-      - SkipCrds=true
     managedNamespaceMetadata:
       labels:
         argocd.argoproj.io/managed-by: argocd
