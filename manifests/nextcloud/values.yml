@@ -1,0 +1,18 @@
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: nextcloud.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 10Gi
+
+mariadb:
+  enabled: true
+  auth:
+    existingSecret: nextcloud-db-secret
