@@ -1,0 +1,17 @@
+nextcloud:
+  host: nextcloud.local
+  existingSecret:
+    enable: true
+    secretName: nextcloud-admin-secret
+    usernameKey: username
+    passwordKey: password
+
+
+internalDatabase:
+  enabled: true
+
+persistence:
+  enabled: true
+  storageClass: local-path   # <<-- here we bind to your SSD via local-path provisioner
+  accessMode: ReadWriteOnce
+  size: 10Gi

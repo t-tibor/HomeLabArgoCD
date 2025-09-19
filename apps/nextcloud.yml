@@ -7,14 +7,17 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
-  source:
-    repoURL: https://github.com/t-tibor/HomeLabArgoCD.git
+  sources:
+  - repoURL: https://nextcloud.github.io/helm/
+    chart: nextcloud
+    targetRevision: 8.0.1
+    helm:
+      valueFiles:
+        - $values/manifests/nextcloud/values.yaml
+  - repoURL: https://github.com/t-tibor/HomeLabArgoCD.git
     targetRevision: main
     path: manifests/nextcloud
-    helm:
-      releaseName: nextcloud
-      valueFiles:
-        - values.yaml
+    ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: nextcloud
