@@ -1,11 +1,14 @@
 nextcloud:
   host: nextcloud.local
+  trustedDomains:
+    - nextcloud.local
+    - nextcloud.nextcloud.svc.cluster.local
+    - nextcloud.tusorihomelab.org
   existingSecret:
     enable: true
     secretName: nextcloud-admin-secret
     usernameKey: username
     passwordKey: password
-
 
 internalDatabase:
   enabled: true
