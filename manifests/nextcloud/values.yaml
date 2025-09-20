@@ -10,6 +10,10 @@ nextcloud:
     usernameKey: username
     passwordKey: password
 
+phpClientHttpsFix:
+  enabled: true
+  protocol: https
+
 internalDatabase:
   enabled: true
 
