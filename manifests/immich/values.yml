@@ -48,8 +48,8 @@ server:
     main:
       enabled: true
       annotations:
-        traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        traefik.ingress.kubernetes.io/service.serversscheme: https
+        traefik.ingress.kubernetes.io/router.entrypoints: web
+        traefik.ingress.kubernetes.io/service.serversscheme: http
         traefik.ingress.kubernetes.io/service.nativelb: "true"
         traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
       hosts:
