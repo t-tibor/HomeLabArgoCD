@@ -53,7 +53,7 @@ server:
         traefik.ingress.kubernetes.io/service.nativelb: "true"
         traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
       hosts:
-        - host: immich.local
+        - host: ""
           paths:
             - path: "/"
       tls: []
