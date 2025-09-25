@@ -6,7 +6,7 @@ env:
   DB_PASSWORD: "immich"
 
 image:
-  tag: v1.124.2
+  tag: v1.143.1
 
 immich:
   metrics:
@@ -44,12 +44,19 @@ server:
   image:
     repository: ghcr.io/immich-app/immich-server
     pullPolicy: IfNotPresent
+  service:
+    main:
+      type: NodePort
+      ports:
+        http:
+          port: 2283       # service port
+          nodePort: 32283  # must be 30000–32767
   ingress:
     main:
       enabled: true
       annotations:
-        traefik.ingress.kubernetes.io/router.entrypoints: web
-        traefik.ingress.kubernetes.io/service.serversscheme: http
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/service.serversscheme: https
         traefik.ingress.kubernetes.io/service.nativelb: "true"
         traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
       hosts:
