@@ -8,9 +8,9 @@ metadata:
 spec:
   project: default
   sources:
-  - repoURL: https://github.com/n8n-io/n8n-hosting.git
+  - repoURL: https://github.com/t-tibor/HomeLabArgoCD.git
     targetRevision: main
-    path: kubernetes
+    path: manifests/n8n
   destination:
     server: https://kubernetes.default.svc
     namespace: n8n
