@@ -19,6 +19,5 @@ internalDatabase:
 
 persistence:
   enabled: true
-  storageClass: local-path   # <<-- here we bind to your SSD via local-path provisioner
-  accessMode: ReadWriteOnce
-  size: 10Gi
+  storageClass: "-"
+  existingClaim: nextcloud-pvc
