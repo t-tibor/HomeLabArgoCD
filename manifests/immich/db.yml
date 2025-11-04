@@ -65,7 +65,7 @@ spec:
         name: pgdata
       spec:
         storageClassName: ""
-        volumeName: immich-pgdata-pvc
+        volumeName: immich-pgdata-pv
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:

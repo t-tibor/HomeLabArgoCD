@@ -71,7 +71,7 @@ spec:
       volumes:
         - name: postgresql-pv
           persistentVolumeClaim:
-            claimName: postgresql-pv
+            claimName: n8n-postgresql-pvc
         - name: postgres-secret
           secret:
             secretName: postgres-secret

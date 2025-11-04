@@ -1,12 +1,31 @@
 env:
-  REDIS_HOSTNAME: '{{ printf "%s-redis-master" .Release.Name }}'
   DB_HOSTNAME: "immich-postgres.immich.svc.cluster.local"
   DB_USERNAME: "immich"
   DB_DATABASE_NAME: "immich"
   DB_PASSWORD: "immich"
 
-image:
-  tag: v1.143.1
+server:
+  enabled: true
+  service:
+    main:
+      type: NodePort
+      ports:
+        http:
+          port: 2283       # service port
+          nodePort: 32283  # must be 30000–32767
+  ingress:
+    main:
+      enabled: true
+      annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/service.serversscheme: https
+        traefik.ingress.kubernetes.io/service.nativelb: "true"
+        traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
+      hosts:
+        - host: ""
+          paths:
+            - path: "/"
+      tls: []
 
 immich:
   metrics:
@@ -31,52 +50,16 @@ immich:
 
 # Dependencies
 
-redis:
+valkey:
   enabled: true
-  architecture: standalone
-  auth:
-    enabled: false
-
-# Immich components
-
-server:
-  enabled: true
-  image:
-    repository: ghcr.io/immich-app/immich-server
-    pullPolicy: IfNotPresent
-  service:
-    main:
-      type: NodePort
-      ports:
-        http:
-          port: 2283       # service port
-          nodePort: 32283  # must be 30000–32767
-  ingress:
-    main:
+  persistence:
+    data:
       enabled: true
-      annotations:
-        traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        traefik.ingress.kubernetes.io/service.serversscheme: https
-        traefik.ingress.kubernetes.io/service.nativelb: "true"
-        traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
-      hosts:
-        - host: ""
-          paths:
-            - path: "/"
-      tls: []
+      size: 1Gi
+      # Optional: Set this to persistentVolumeClaim to keep job queues persistent
+      type: emptyDir 
+      accessMode: ReadWriteOnce
+      storageClass: "-"
 
 machine-learning:
   enabled: false
-  image:
-    repository: ghcr.io/immich-app/immich-machine-learning
-    pullPolicy: IfNotPresent
-  env:
-    TRANSFORMERS_CACHE: /cache
-  persistence:
-    cache:
-      enabled: true
-      size: 10Gi
-      # Optional: Set this to pvc to avoid downloading the ML models every start.
-      type: emptyDir
-      accessMode: ReadWriteMany
-      # storageClass: your-class
