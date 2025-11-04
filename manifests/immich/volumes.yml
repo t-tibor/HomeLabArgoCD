@@ -4,7 +4,8 @@ metadata:
   name: immich-library-pvc
   namespace: immich
 spec:
-  storageClassName: manual
+  volumeName: immich-library-pv
+  storageClassName: ""
   accessModes:
     - ReadWriteMany
   resources:
