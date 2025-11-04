@@ -1,9 +1,11 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: postgresql-pv
+  name: n8n-postgresql-pvc
   namespace: n8n
 spec:
+  storageClassName: ""
+  volumeName: "n8n-postgresql-pv"
   accessModes:
     - ReadWriteOnce
   resources:

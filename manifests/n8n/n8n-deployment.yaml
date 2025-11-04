@@ -69,7 +69,7 @@ spec:
       volumes:
         - name: n8n-claim0
           persistentVolumeClaim:
-            claimName: n8n-claim0
+            claimName: n8n-pvc
         - name: n8n-secret
           secret:
             secretName: n8n-secret
