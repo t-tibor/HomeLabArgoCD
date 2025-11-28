@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+  namespace: smart-home
+data:
+  mosquitto.conf: |
+
+    password_file /mosquitto/config/password.txt
+
+    # MQTTS listener
+    listener 1883
+    protocol mqtt
+
+    # WS Listener
+    listener 9001
+    protocol websockets
+
+    allow_anonymous true
+  password.txt: |
+    admin:$7$101$tz6arXoVTIHSiOis$msNpyhYVntBTDtPjHeUhr8YAckwsKfQRivH9hm+It7Bn3/1OB2aBHQq+S0n5AZMokqRtv79Rzh5oZMwnnhtXZw==

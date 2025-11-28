@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqttx-web
+  namespace: smart-home
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mqttx-web
+  template:
+    metadata:
+      labels:
+        app: mqttx-web
+    spec:
+      containers:
+      - name: mqttx-web
+        image: emqx/mqttx-web:v1.12.1
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mqttx-web
+  namespace: smart-home
+spec:
+  selector:
+    app: mqttx-web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
