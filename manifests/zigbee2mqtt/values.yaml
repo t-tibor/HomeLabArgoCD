@@ -1,0 +1,60 @@
+service:
+  # -- annotations for the service created
+  annotations: {}
+  # -- type of Service to be created
+  type: ClusterIP
+  # -- port in which the service will be listening
+  port: 8080
+
+statefulset:
+  storage:
+    enabled: true
+    storageClassName: ""
+    size: 500Mi
+  # -- Select specific kube node, this will allow enforcing zigbee2mqtt running
+  # only on the node with the USB adapter connected
+  nodeSelector:
+    hw: zigbee-bridge
+  # -- Additional volumeMounts to the server main container
+  volumeMounts:
+    - mountPath: /dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B001CCC69D0-if00
+      name: dev
+  # -- Additional volumes to the server pod
+  volumes:
+    - name: dev
+      hostPath:
+        path: /dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B001CCC69D0-if00
+  
+zigbee2mqtt:
+  homeassistant:
+    enabled: true
+    discovery_topic: "homeassistant"
+    status_topic: "homeassistant/status"
+  timezone: "Europe/Berlin"
+  permit_join: true
+  mqtt:
+    # -- Required: MQTT server URL (use mqtts:// for SSL/TLS connection)
+    server: "mqtt://mosquitto-mqtts:1883"
+  serial:
+    port: /dev/serial/by-id/usb-Texas_Instruments_TI_CC2531_USB_CDC___0X00124B001CCC69D0-if00
+    adapter: zstack
+  advanced:
+    log_level: info
+    pan_id: 0x1A63
+    network_key:
+      - 221
+      - 18
+      - 177
+      - 110
+      - 52
+      - 232
+      - 206
+      - 15
+      - 2
+      - 65
+      - 207
+      - 58
+      - 72
+      - 244
+      - 140
+      - 196 

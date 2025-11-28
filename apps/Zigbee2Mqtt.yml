@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zigbee2mqtt
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  sources:
+  - repoURL: https://charts.zigbee2mqtt.io
+    chart: zigbee2mqtt
+    targetRevision: 2.6.3
+    helm:
+      valueFiles:
+        - $values/manifests/zigbee2mqtt/values.yaml
+  - repoURL: https://github.com/t-tibor/HomeLabArgoCD.git
+    targetRevision: main
+    path: manifests/zigbee2mqtt
+    ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: smart-home
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
