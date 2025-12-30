@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: light-dashboard
+  name: light-dashboard
+  namespace: smart-home
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: light-dashboard
+  template:
+    metadata:
+      labels:
+        app: light-dashboard
+    spec:
+      volumes:
+      - name: config-volume
+        configMap:
+          name: light-dashboard-cm
+      containers:
+      - image: ttuti94/homedashboard-web:arm64
+        imagePullPolicy: Always
+        name: homedashboard-web
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config.json
+          subPath: config.json
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"

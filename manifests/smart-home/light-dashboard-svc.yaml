@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: light-dashboard-svc
+  namespace: smart-home
+spec:
+  type: NodePort
+  selector:
+    app: light-dashboard
+  ports:
+  - port: 8080
+    nodePort: 30085

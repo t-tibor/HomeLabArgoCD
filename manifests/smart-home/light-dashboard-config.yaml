@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: light-dashboard-cm
+  namespace: smart-home
+data:
+  config.json: |
+    {
+      "AllowedHosts": "*",
+      "MqttConfig": {
+        "ServerHostName": "mosquitto-mqtts",
+        "Topics": {
+          "Dimmer": "zigbee2mqtt/KonyhaLedDimmer",
+          "DimmerSet": "zigbee2mqtt/KonyhaLedDimmer/set",
+          "PowerSupplySet": "zigbee2mqtt/NappaliLedTápegység/set"
+        }
+      }
+    }
+
