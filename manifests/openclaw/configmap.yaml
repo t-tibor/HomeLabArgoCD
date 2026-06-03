@@ -20,7 +20,14 @@ data:
       },
       "agents": {
         "defaults": {
-          "workspace": "~/.openclaw/workspace"
+          "workspace": "~/.openclaw/workspace",
+          "model": {
+            "primary": "openai/gpt-5.4-mini"
+          },
+          "models": {
+            "openai/gpt-5.4-mini": {},
+            "openai/gpt-5.5": {}
+          }
         },
         "list": [
           {
