@@ -9,13 +9,18 @@ data:
     {
       "gateway": {
         "mode": "local",
-        "bind": "loopback",
+        "bind": "lan",
         "port": 18789,
         "auth": {
           "mode": "token"
         },
         "controlUi": {
-          "enabled": true
+          "enabled": true,
+          "allowedOrigins": [
+            "http://openclaw:18789",
+            "http://localhost:18789",
+            "https://openclaw.tusorihomelab.org"
+          ]
         }
       },
       "agents": {
