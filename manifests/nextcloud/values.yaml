@@ -4,6 +4,7 @@ nextcloud:
     - nextcloud.local
     - nextcloud.nextcloud.svc.cluster.local
     - nextcloud.tusorihomelab.org
+    - 192.168.1.107
   existingSecret:
     enable: true
     secretName: nextcloud-admin-secret
@@ -16,6 +17,10 @@ phpClientHttpsFix:
 
 internalDatabase:
   enabled: true
+
+service:
+  type: NodePort
+  nodePort: 32284
 
 persistence:
   enabled: true
