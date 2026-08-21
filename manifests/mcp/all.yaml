@@ -1,0 +1,132 @@
+# 00-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp
+---
+# 01-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubernetes-mcp-server
+  namespace: mcp
+automountServiceAccountToken: true
+---
+# 02-rbac.yaml
+# Bind to the built-in "view" ClusterRole — read-only across all namespaced
+# resources, cluster-wide. If you'd rather scope this to specific namespaces,
+# swap ClusterRoleBinding for a RoleBinding per-namespace instead.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-mcp-server-view
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-mcp-server
+    namespace: mcp
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
+---
+# 03-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-mcp-server
+  namespace: mcp
+  labels:
+    app: kubernetes-mcp-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubernetes-mcp-server
+  template:
+    metadata:
+      labels:
+        app: kubernetes-mcp-server
+    spec:
+      serviceAccountName: kubernetes-mcp-server
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: kubernetes-mcp-server
+          image: ghcr.io/containers/kubernetes-mcp-server:v0.0.66
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--port=8080"              # Streamable HTTP (/mcp) + SSE (/sse)
+            - "--read-only"               # belt: app-level refusal of write tools
+            - "--disable-destructive"     # extra safety net even if --read-only is ever removed
+            - "--toolsets=core"           # skip helm/tekton/kiali toolsets you don't need
+            - "--disable-multi-cluster"   # single in-cluster context only
+            - "--stateless"               # fine for a shared Deployment behind a Service
+            - "--cluster-provider=in-cluster"
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 20
+---
+# 04-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubernetes-mcp-server
+  namespace: mcp
+spec:
+  selector:
+    app: kubernetes-mcp-server
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+# 05-networkpolicy.yaml
+# Only allow pods that need it to reach the MCP server. Adjust the
+# podSelector/namespaceSelector to match wherever your agent Deployments live.
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: kubernetes-mcp-server-allow-agents
+#   namespace: mcp
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: kubernetes-mcp-server
+#   policyTypes:
+#     - Ingress
+#   ingress:
+#     - from:
+#         - namespaceSelector:
+#             matchLabels:
+#               kubernetes.io/metadata.name: agents   # label on your future agents namespace
+#       ports:
+#         - protocol: TCP
+#           port: 8080
