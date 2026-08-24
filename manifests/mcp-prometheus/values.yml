@@ -7,6 +7,10 @@ mcp:
 service:
   type: ClusterIP
 
+grafana:
+  dashboards:
+    enabled: true
+
 serviceMonitor:
   enabled: true
   labels:
