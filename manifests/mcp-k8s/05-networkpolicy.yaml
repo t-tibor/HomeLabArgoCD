@@ -1,0 +1,21 @@
+# Only allow pods that need it to reach the MCP server. Adjust the
+# podSelector/namespaceSelector to match wherever your agent Deployments live.
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: kubernetes-mcp-server-allow-agents
+#   namespace: mcp-k8s
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: kubernetes-mcp-server
+#   policyTypes:
+#     - Ingress
+#   ingress:
+#     - from:
+#         - namespaceSelector:
+#             matchLabels:
+#               kubernetes.io/metadata.name: agents   # label on your future agents namespace
+#       ports:
+#         - protocol: TCP
+#           port: 8080

@@ -1,0 +1,15 @@
+# Bind to the built-in "view" ClusterRole — read-only across all namespaced
+# resources, cluster-wide. If you'd rather scope this to specific namespaces,
+# swap ClusterRoleBinding for a RoleBinding per-namespace instead.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-mcp-server-view
+subjects:
+  - kind: ServiceAccount
+    name: kubernetes-mcp-server
+    namespace: mcp-k8s
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
