@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mcp-prometheus
+  namespace: argocd
+spec:
+  project: default
+  sources:
+  - repoURL: ghcr.io/tjhop/charts
+    chart: prometheus-mcp-server
+    targetRevision: 0.18.0
+    helm:
+      valueFiles:
+        - $values/manifests/mcp-prometheus/values.yml
+  - repoURL: https://github.com/t-tibor/HomeLabArgoCD.git
+    targetRevision: main
+    path: manifests/mcp-prometheus
+    ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mcp-prometheus
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

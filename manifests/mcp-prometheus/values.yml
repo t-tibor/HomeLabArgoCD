@@ -1,0 +1,13 @@
+prometheus:
+  url: http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
+
+mcp:
+  transport: http
+
+service:
+  type: ClusterIP
+
+serviceMonitor:
+  enabled: true
+  labels:
+    release: prometheus-stack
