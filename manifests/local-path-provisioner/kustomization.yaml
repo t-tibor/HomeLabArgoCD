@@ -2,7 +2,14 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+  # Pinned to a release tag (instead of master) so upstream changes only reach
+  # the cluster when the tag is bumped here on purpose.
+  - https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.37/deploy/local-path-storage.yaml
 
-patchesStrategicMerge:
-  - storage-config.yaml
+patches:
+  # Store volumes under /data (the SSD mount on pi5) instead of /opt/local-path-provisioner
+  - path: storage-config.yaml
+  # Mark local-path as the cluster default StorageClass. k3s's built-in
+  # local-storage addon used to set this; it is disabled on this cluster
+  # (`disable: [local-storage]` in /etc/rancher/k3s/config.yaml on pi5).
+  - path: default-storageclass.yaml
