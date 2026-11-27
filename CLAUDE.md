@@ -23,4 +23,5 @@ Rules for working in this repo. For what the repo is, how it is laid out, which 
 - Where a change can be checked offline, check it before opening the PR (e.g. `kustomize build` for Kustomize directories and diff the output against `main`).
 - Never commit real secrets. They live in the gitignored `.local/`; only templates go under `manifests/`.
 - Keep cluster-facing tooling locked down (read-only, minimal RBAC, restricted `securityContext`), as in `manifests/mcp-k8s/`.
-- When an app is added, removed or materially changed, update README.md in the same PR.
+- Before opening a PR, check whether README.md or anything in `docs/` needs updating (new or removed apps, changed conventions, new manual steps) and include those updates in the same PR.
+- README.md is the single entry point. Longer topic docs go in `docs/` and are linked from README.md; don't add new Markdown files to the repo root.

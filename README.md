@@ -11,9 +11,16 @@ New here? Read [How it works](#how-it-works) first, then [Making changes](#makin
 | Node | Role | Hardware | Storage | Labels |
 |---|---|---|---|---|
 | `pi5` | control plane (k3s server) | Raspberry Pi 5, 8 GB | SSD mounted at `/data` | `storage=ssd` |
-| `raspberrypi4b` | worker (k3s agent) | Raspberry Pi 4, 4 GB, Zigbee adapter, BME280 sensor | SD card only (`/data` is on the SD card) | `hw=zigbee-bridge`, `hw=bme280` |
+| `raspberrypi4b` | worker (k3s agent) | Raspberry Pi 4, 4 GB, Zigbee adapter, BME280 temperature sensor | SD card only (`/data` is on the SD card) | `hw=zigbee-bridge` |
 
-Node labels are used for scheduling: anything with large or important data is pinned to `pi5` (`storage=ssd`); Zigbee2MQTT must run on the Pi 4 because the Zigbee adapter is plugged in there (`hw=zigbee-bridge`). See [Nodes.md](Nodes.md).
+Node labels are used for scheduling: anything with large or important data is pinned to `pi5` (`storage=ssd`); Zigbee2MQTT must run on the Pi 4 because the Zigbee adapter is plugged in there (`hw=zigbee-bridge`). The BME280 sensor has no label of its own: a node can only have one value for the `hw` key, and it is used for the Zigbee adapter.
+
+Labels are set by hand when a node joins:
+
+```bash
+kubectl label node pi5 storage=ssd
+kubectl label node raspberrypi4b hw=zigbee-bridge
+```
 
 ## How it works
 
@@ -70,7 +77,7 @@ Chart versions are pinned in each `apps/*.yml` (`targetRevision`).
 These were installed by hand and are not reconciled by Argo CD:
 
 - **k3s built-ins**: Traefik (ingress), CoreDNS, metrics-server.
-- **Argo CD** itself, in `argocd` (see [ManualSetup.md](ManualSetup.md)).
+- **Argo CD** itself, in `argocd` (see [Bootstrapping](#bootstrapping-a-new-cluster)).
 - **Monitoring**: `kube-prometheus-stack` (Prometheus, Alertmanager, Grafana) in `monitoring`.
 - **Headlamp** (cluster UI) in `kube-system`; its admin token secret is [manifests/headlamp/](manifests/headlamp/), applied manually.
 - **kubernetes-agent** in `k3s-agent`, an AI agent that uses `mcp-k8s`.
@@ -100,8 +107,8 @@ Real secret values never go into Git. They live in the gitignored `.local/` fold
 
 ## Bootstrapping a new cluster
 
-1. Install k3s on `pi5` with `/etc/rancher/k3s/config.yaml` containing `disable: [local-storage]`, mount the SSD at `/data`, then join the Pi 4 as an agent. Apply the node labels from [Nodes.md](Nodes.md).
-2. Install Argo CD and apply [ManualSetup.md](ManualSetup.md).
+1. Install k3s on `pi5` with `/etc/rancher/k3s/config.yaml` containing `disable: [local-storage]`, mount the SSD at `/data`, then join the Pi 4 as an agent. Apply the node labels from [The cluster](#the-cluster).
+2. Install Argo CD in the `argocd` namespace and set it up as described in [Argo CD setup](#argo-cd-setup).
 3. Create the secrets and static PersistentVolumes the apps need (see [Secrets](#secrets) and [Storage](#storage)).
 4. Create the root Application and sync it:
 
@@ -128,8 +135,50 @@ Real secret values never go into Git. They live in the gitignored `.local/` fold
 - **Namespaces** are usually created by `CreateNamespace=true`, but some apps also ship an explicit `Namespace` manifest (e.g. `manifests/smart-home/ns.yaml`). Both work.
 - **Cluster-facing tooling is kept locked down.** `mcp-k8s` runs `--read-only --disable-destructive` with a restricted `securityContext`, is bound only to the built-in `view` ClusterRole and has a NetworkPolicy. Keep that posture for similar tools.
 
-## Other docs
+## Using the MCP servers
 
-- [Nodes.md](Nodes.md): node hardware and labels.
-- [ManualSetup.md](ManualSetup.md): one-off Argo CD and Traefik setup steps that are not GitOps-managed.
-- [mcp-prometheus.md](mcp-prometheus.md): original notes from setting up the Prometheus MCP server. The live deployment is [apps/mcp-prometheus.yml](apps/mcp-prometheus.yml), so namespaces and commands in the notes may differ.
+`mcp-k8s` and `mcp-prometheus` give AI agents read-only access to the cluster and its metrics over MCP's streamable HTTP transport.
+
+| Server | In-cluster endpoint | Talks to |
+|---|---|---|
+| `mcp-k8s` | `http://kubernetes-mcp-server.mcp-k8s.svc.cluster.local:8080/mcp` | Kubernetes API, as the built-in `view` ClusterRole |
+| `mcp-prometheus` | `http://mcp-prometheus-prometheus-mcp-server.mcp-prometheus.svc.cluster.local:8080/mcp` | `prometheus-stack-kube-prom-prometheus.monitoring:9090` |
+
+- The Prometheus MCP server relies on the chart's safe defaults: the destructive TSDB admin tools (`snapshot`, `delete_series`, `clean_tombstones`) stay disabled, and it doesn't mount a Kubernetes service account token. Its NetworkPolicy only lets it reach Prometheus and DNS.
+- From outside the cluster, port-forward and point the MCP client at `http://localhost:8080/mcp`:
+
+  ```bash
+  kubectl port-forward -n mcp-prometheus svc/mcp-prometheus-prometheus-mcp-server 8080:8080
+  ```
+
+## Argo CD setup
+
+One-off steps after installing Argo CD. They are not managed by GitOps.
+
+**Run the Argo CD server in insecure mode** (TLS is terminated in front of it):
+
+1. `kubectl edit deployment argocd-server -n argocd`
+2. Add `--insecure` to the container args:
+   ```yaml
+   args:
+     - <server executable>
+     - --insecure
+   ```
+3. `kubectl rollout restart deployment argocd-server -n argocd`
+
+**Optional: self-signed certificate for Traefik**
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout homelab.key -out homelab.crt \
+  -subj "/CN=homelab.local"
+
+kubectl create secret tls argocd-tls \
+  --cert=homelab.crt \
+  --key=homelab.key \
+  -n argocd
+```
+
+## Further docs
+
+Longer how-tos and background notes that don't fit in this README go into a `docs/` folder, one Markdown file per topic, linked from here. There are none yet.
