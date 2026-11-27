@@ -25,3 +25,7 @@ Rules for working in this repo. For what the repo is, how it is laid out, which 
 - Keep cluster-facing tooling locked down (read-only, minimal RBAC, restricted `securityContext`), as in `manifests/mcp-k8s/`.
 - Before opening a PR, check whether README.md or anything in `docs/` needs updating (new or removed apps, changed conventions, new manual steps) and include those updates in the same PR.
 - README.md is the single entry point. Longer topic docs go in `docs/` and are linked from README.md; don't add new Markdown files to the repo root.
+
+## Keeping these rules current
+
+When a conversation reveals a new preference of the user about how work in this repo should be done (workflow, naming, conventions, what to check or avoid), ask whether it should be recorded here. If yes, add it to the matching section of this file, or to README.md if it describes the repo rather than a working rule. Ship the update as part of the current PR or as its own `docs:` PR. Don't record preferences without asking.
