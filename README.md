@@ -105,6 +105,35 @@ Real secret values never go into Git. They live in the gitignored `.local/` fold
    - **New secrets or static volumes**: create them before the app syncs.
 3. Check the result in the Argo CD UI or with `kubectl get applications -n argocd`.
 
+## Dependency updates
+
+[Renovate](https://docs.renovatebot.com/) (GitHub app, configured in [.github/renovate.json5](.github/renovate.json5)) opens a PR whenever a newer version is available. **Nothing is merged automatically**; every Renovate PR is reviewed and merged by hand like any other PR. PR titles follow the CLAUDE.md rules, e.g. `chore(smart-home): update homeassistant/home-assistant docker tag to v<version>`. An issue called *Dependency Dashboard* lists every pending and open update.
+
+| What | Where | How Renovate finds it |
+|---|---|---|
+| Helm chart versions | `targetRevision` in `apps/*.yml` | built-in `argocd` manager |
+| Container images | `image:` in `manifests/**` | built-in `kubernetes` manager |
+| Immich server image | `manifests/immich/values.yml` | `# renovate:` comment above the tag; grouped with the Immich chart in one PR |
+| local-path-provisioner | release tag in `manifests/local-path-provisioner/kustomization.yaml` | custom regex manager (GitHub releases) |
+| Own images without version tags | `image: <name>:<tag>@sha256:<digest>` | the tag stays, Renovate updates the digest when the tag points to a new build (used for `homedashboard-web:arm64`) |
+
+To have Renovate track a version it can't detect on its own, put a comment on the line above it:
+```yaml
+# renovate: datasource=docker depName=<registry>/<image>
+tag: v1.2.3
+```
+
+Never use floating tags like `latest`; Renovate can't track them, and Git no longer says what's running. Pin to a version, or to tag plus digest.
+
+Not tracked:
+- **The Immich Postgres image** is disabled on purpose. Immich needs specific Postgres and vector-extension versions, so change it only when the Immich release notes say so.
+- **k3s and Argo CD** aren't managed by this repo yet (see [docs/](docs/)).
+
+Reviewing a Renovate PR:
+1. Read the release notes linked in the PR, especially for minor and major versions.
+2. Merge it.
+3. Check that the app syncs and stays Healthy in Argo CD.
+
 ## Bootstrapping a new cluster
 
 1. Install k3s on `pi5` with `/etc/rancher/k3s/config.yaml` containing `disable: [local-storage]`, mount the SSD at `/data`, then join the Pi 4 as an agent. Apply the node labels from [The cluster](#the-cluster).

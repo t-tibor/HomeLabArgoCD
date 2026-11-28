@@ -1,0 +1,79 @@
+// Renovate: opens a PR whenever a newer version of a Helm chart, container
+// image or pinned manifest is available. Nothing is merged automatically;
+// every PR is reviewed by hand. See README → "Dependency updates".
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
+  timezone: "Europe/Budapest",
+
+  // Every PR is reviewed and merged by hand.
+  automerge: false,
+
+  // PR titles become the squash commit on main, so they follow the
+  // Conventional Commits rules in CLAUDE.md: chore(<app>): update ...
+  semanticCommits: "enabled",
+  semanticCommitType: "chore",
+  branchPrefix: "chore/renovate-",
+
+  // Left-over manifests of a removed app; not deployed.
+  ignorePaths: ["manifests/openclaw/**"],
+
+  // Helm charts referenced by the Argo CD Applications in apps/.
+  argocd: {
+    managerFilePatterns: ["/^apps/.+\\.ya?ml$/"],
+  },
+
+  // Container images in the raw manifests under manifests/.
+  kubernetes: {
+    managerFilePatterns: ["/^manifests/.+\\.ya?ml$/"],
+  },
+
+  customManagers: [
+    {
+      // Versions marked with a comment like:
+      //   # renovate: datasource=docker depName=ghcr.io/immich-app/immich-server
+      //   tag: v2.7.5
+      customType: "regex",
+      description: "Versions annotated with a # renovate: comment",
+      managerFilePatterns: ["/^manifests/.+\\.ya?ml$/", "/^apps/.+\\.ya?ml$/"],
+      matchStrings: [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s*\\n\\s*[\\w.-]+: [\"']?(?<currentValue>[^\\s\"']+)",
+      ],
+    },
+    {
+      // Upstream local-path-provisioner manifest pinned by tag in the URL.
+      customType: "regex",
+      description: "local-path-provisioner upstream manifest",
+      managerFilePatterns: ["/^manifests/local-path-provisioner/kustomization\\.yaml$/"],
+      matchStrings: [
+        "rancher/local-path-provisioner/(?<currentValue>v[0-9.]+)/deploy/",
+      ],
+      datasourceTemplate: "github-releases",
+      depNameTemplate: "rancher/local-path-provisioner",
+    },
+  ],
+
+  packageRules: [
+    {
+      // Scope = app name, taken from the Application file name: apps/immich.yml → immich
+      matchFileNames: ["apps/**"],
+      semanticCommitScope: "{{{lowercase (replace '^apps/(.+)\\.ya?ml$' '$1' packageFile)}}}",
+    },
+    {
+      // Scope = app name, taken from the manifests folder: manifests/smart-home/... → smart-home
+      matchFileNames: ["manifests/**"],
+      semanticCommitScope: "{{{parentDir}}}",
+    },
+    {
+      // Immich requires a specific Postgres image (with its vector extensions).
+      // Only change it when the Immich release notes say so.
+      matchDepNames: ["ghcr.io/immich-app/postgres"],
+      enabled: false,
+    },
+    {
+      // The Immich server image and chart are upgraded together.
+      matchDepNames: ["immich", "ghcr.io/immich-app/immich-server"],
+      groupName: "immich",
+    },
+  ],
+}

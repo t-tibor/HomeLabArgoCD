@@ -17,6 +17,11 @@ Rules for working in this repo. For what the repo is, how it is laid out, which 
 - Use the same style for the commit messages on the branch.
 - The PR description says **why** the change is needed, **what** changed and any **manual steps after merging** (see README → *Making changes*).
 
+## Dependency updates (Renovate)
+
+- Automerge stays **off**: every Renovate PR is reviewed and merged by hand. Don't enable `automerge` in `.github/renovate.json5` unless the user explicitly asks for it (they may later allow it for some update types).
+- Review a Renovate PR like any other: read the linked release notes, especially for minor and major versions, before recommending a merge.
+
 ## Changes
 
 - Follow the conventions in README.md (Application pattern, sync waves, storage) unless there is a specific reason to deviate; say so in the PR if you do.
@@ -24,6 +29,7 @@ Rules for working in this repo. For what the repo is, how it is laid out, which 
 - Never commit real secrets. They live in the gitignored `.local/`; only templates go under `manifests/`.
 - Keep cluster-facing tooling locked down (read-only, minimal RBAC, restricted `securityContext`), as in `manifests/mcp-k8s/`.
 - Before opening a PR, check whether README.md or anything in `docs/` needs updating (new or removed apps, changed conventions, new manual steps) and include those updates in the same PR.
+- Image tags are pinned to a version, or to `tag@sha256:digest`. Never use floating tags like `latest`; Renovate can't track them.
 - README.md is the single entry point. Longer topic docs go in `docs/` and are linked from README.md; don't add new Markdown files to the repo root.
 
 ## Keeping these rules current
