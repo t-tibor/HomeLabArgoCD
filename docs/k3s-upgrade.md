@@ -102,5 +102,5 @@ If the Pi 4 was already upgraded in that step, reinstall the previous version th
 
 - Keep the newest `~/k3s-backup-*.tgz` on pi5 for a few days, then delete the backups.
 - Old system images are cleaned up automatically by the kubelet's image garbage collection.
-- Check that Argo CD's version supports the new Kubernetes version, and upgrade it if not. It isn't managed by this repo; see the README.
+- Check that Argo CD's version supports the new Kubernetes version, and upgrade it if not: see [argocd-upgrade.md](argocd-upgrade.md).
 - Update the "Last done" line at the top of this file.
