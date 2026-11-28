@@ -181,4 +181,6 @@ kubectl create secret tls argocd-tls \
 
 ## Further docs
 
-Longer how-tos and background notes that don't fit in this README go into a `docs/` folder, one Markdown file per topic, linked from here. There are none yet.
+Longer how-tos and background notes that don't fit in this README go into the [docs/](docs/) folder, one Markdown file per topic, linked from here:
+
+- [docs/k3s-upgrade.md](docs/k3s-upgrade.md): upgrading k3s on both nodes, one minor version at a time.
