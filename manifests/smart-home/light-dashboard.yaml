@@ -20,7 +20,7 @@ spec:
         configMap:
           name: light-dashboard-cm
       containers:
-      - image: ghcr.io/t-tibor/homedashboard-web:arm64
+      - image: ghcr.io/t-tibor/homedashboard-web:arm64@sha256:cd1e5b549cce88813c3df45be0d01f0866304cf653d4f8e81b54246f98b85cf2
         imagePullPolicy: Always
         name: homedashboard-web
         ports:

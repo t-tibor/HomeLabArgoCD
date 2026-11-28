@@ -115,6 +115,7 @@ Real secret values never go into Git. They live in the gitignored `.local/` fold
 | Container images | `image:` in `manifests/**` | built-in `kubernetes` manager |
 | Immich server image | `manifests/immich/values.yml` | `# renovate:` comment above the tag; grouped with the Immich chart in one PR |
 | local-path-provisioner | release tag in `manifests/local-path-provisioner/kustomization.yaml` | custom regex manager (GitHub releases) |
+| Own images without version tags | `image: <name>:<tag>@sha256:<digest>` | the tag stays, Renovate updates the digest when the tag points to a new build (used for `homedashboard-web:arm64`) |
 
 To have Renovate track a version it can't detect on its own, put a comment on the line above it:
 ```yaml
@@ -122,8 +123,9 @@ To have Renovate track a version it can't detect on its own, put a comment on th
 tag: v1.2.3
 ```
 
+Never use floating tags like `latest`; Renovate can't track them, and Git no longer says what's running. Pin to a version, or to tag plus digest.
+
 Not tracked:
-- **`cloudflare/cloudflared:latest`** and **`ghcr.io/t-tibor/homedashboard-web:arm64`** use tags without a version. Pin them to a version (or digest) to get updates.
 - **The Immich Postgres image** is disabled on purpose. Immich needs specific Postgres and vector-extension versions, so change it only when the Immich release notes say so.
 - **k3s and Argo CD** aren't managed by this repo yet (see [docs/](docs/)).
 
