@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: mqttx-web
-        image: emqx/mqttx-web:v1.12.1
+        image: emqx/mqttx-web:v1.13.3
         ports:
         - containerPort: 80
         resources:
