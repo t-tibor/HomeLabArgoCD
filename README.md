@@ -155,16 +155,20 @@ Real secret values never go into Git. They live in the gitignored `.local/` fold
 
 One-off steps after installing Argo CD. They are not managed by GitOps.
 
-**Run the Argo CD server in insecure mode** (TLS is terminated in front of it):
+**Install** the upstream non-HA manifest with server-side apply. That's required because Argo CD's CRDs are too large for plain `kubectl apply`. Upgrades use the same command; see [docs/argocd-upgrade.md](docs/argocd-upgrade.md).
 
-1. `kubectl edit deployment argocd-server -n argocd`
-2. Add `--insecure` to the container args:
-   ```yaml
-   args:
-     - <server executable>
-     - --insecure
-   ```
-3. `kubectl rollout restart deployment argocd-server -n argocd`
+```bash
+kubectl create namespace argocd
+kubectl apply -n argocd --server-side --force-conflicts \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/v3.6.2/manifests/install.yaml
+```
+
+**Run the Argo CD server in insecure mode** (plain HTTP; TLS is terminated in front of it). Set it in `argocd-cmd-params-cm`, not in the Deployment's args, which every upgrade overwrites:
+
+```bash
+kubectl -n argocd patch configmap argocd-cmd-params-cm --type merge -p '{"data":{"server.insecure":"true"}}'
+kubectl -n argocd rollout restart deployment argocd-server
+```
 
 **Optional: self-signed certificate for Traefik**
 
@@ -184,3 +188,4 @@ kubectl create secret tls argocd-tls \
 Longer how-tos and background notes that don't fit in this README go into the [docs/](docs/) folder, one Markdown file per topic, linked from here:
 
 - [docs/k3s-upgrade.md](docs/k3s-upgrade.md): upgrading k3s on both nodes, one minor version at a time.
+- [docs/argocd-upgrade.md](docs/argocd-upgrade.md): upgrading Argo CD itself.
